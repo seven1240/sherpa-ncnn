@@ -291,6 +291,60 @@ SHERPA_NCNN_API void DestroyDisplay(SherpaNcnnDisplay *display);
 SHERPA_NCNN_API void SherpaNcnnPrint(SherpaNcnnDisplay *display, int32_t idx,
                                      const char *s);
 
+
+/// ======================================== TTS ============================
+
+SHERPA_NCNN_API typedef struct SherpaNcnnTts SherpaNcnnTts;
+SHERPA_NCNN_API typedef struct SherpaNcnnTtsAudio SherpaNcnnTtsAudio;
+
+typedef int32_t (*SherpaNcnnTtsAudioCallback)(const float* samples,
+                                              int32_t num_samples,
+                                              int32_t processed, int32_t total,
+                                              void* arg);
+
+SHERPA_NCNN_API typedef struct SherpaNcnnTtsConfig {
+  const char* model_dir;
+  int sid;
+  float speed;
+  int debug;
+  int n_threads;
+  SherpaNcnnTtsAudioCallback callback;  // callback for each sentence
+  void* user_data;                      // callback arg
+} SherpaNcnnTtsConfig;
+
+/// Create a TTS generator.
+///
+/// @param config  Config for the TTS.
+/// @return Return a pointer to the TTS. The user has to invoke
+//          SherpaNcnnTtsDestroy() to free it to avoid memory leak.
+SHERPA_NCNN_API SherpaNcnnTts* SherpaNcnnCreateTts(
+    const SherpaNcnnTtsConfig* config);
+SHERPA_NCNN_API void SherpaNcnnTtsDestroy(SherpaNcnnTts** ntts);
+
+/// Generator audio from text.
+///
+/// @param ntts  Pointer to the TTS generator.
+/// @param text  Text to be synthesized.
+/// @param config  Config for the TTS.
+/// @return Return a pointer to the Generated Audio. The user has to invoke
+///         SherpaNcnnTtsAudioDestroy() to free it to avoid memory leak.
+SHERPA_NCNN_API SherpaNcnnTtsAudio* SherpaNcnnTtsGenerate(
+    SherpaNcnnTts* ntts, const char* text, const SherpaNcnnTtsConfig* config);
+SHERPA_NCNN_API void SherpaNcnnTtsAudioDestroy(SherpaNcnnTtsAudio** audio);
+
+SHERPA_NCNN_API uint32_t
+SherpaNcnnTtsAudioGetSampleRate(SherpaNcnnTtsAudio* audio);
+SHERPA_NCNN_API uint32_t
+SherpaNcnnTtsAudioGetSampleCount(SherpaNcnnTtsAudio* audio);
+SHERPA_NCNN_API float SherpaNcnnTtsAudioGetDuration(SherpaNcnnTtsAudio* audio);
+SHERPA_NCNN_API float SherpaNcnnTtsAudioGetElapsedSeconds(
+    SherpaNcnnTtsAudio* audio);
+SHERPA_NCNN_API float SherpaNcnnTtsAudioGetRtf(SherpaNcnnTtsAudio* audio);
+SHERPA_NCNN_API float* SherpaNcnnTtsAudioGetSamplePtr(
+    SherpaNcnnTtsAudio* audio);
+
+/// ======================================== TTS END ========================
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
